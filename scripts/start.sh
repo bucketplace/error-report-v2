@@ -1,0 +1,1 @@
+java -jar error-report-v2-*.jar

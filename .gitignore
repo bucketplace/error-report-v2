@@ -1,0 +1,12 @@
+/.gradle
+/.idea
+/out
+/build
+*.iml
+*.ipr
+*.iws
+/src/secrets/
+/db/
+/src/enums/
+/temp
+/appstore-connect-api-private-key.p8
