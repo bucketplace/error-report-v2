@@ -17,17 +17,15 @@ object ApiRequester : KoinComponent {
         return getKoin()
             .get<OkHttpClient>()
             .request(method, url, headers, jsonBody)
-            .use {
-                receive(it)
-            }
+            .receive()
     }
 
-    inline fun <reified T> receive(response: Response): T {
+    inline fun <reified T> Response.receive(): T {
         return when (typeInfo<T>()) {
-            typeInfo<Unit>() -> Unit as T
-            typeInfo<Response>() -> response as T
-            typeInfo<String>() -> response.body()!!.string() as T
-            else -> response.body()!!.string().parseJson()
+            typeInfo<Unit>() -> close().let { Unit as T }
+            typeInfo<Response>() -> this as T // notes: not closed.
+            typeInfo<String>() -> body()!!.string() as T
+            else -> body()!!.string().parseJson()
         }
     }
 }

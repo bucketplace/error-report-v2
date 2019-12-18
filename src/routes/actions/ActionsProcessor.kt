@@ -2,17 +2,14 @@ package routes.actions
 
 import enums.Action
 import io.ktor.application.ApplicationCall
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.response.HttpResponse
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.isSuccess
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.response.respondText
-import io.ktor.util.cio.writeChannel
-import kotlinx.coroutines.io.copyAndClose
 import kotlinx.coroutines.runBlocking
+import okhttp3.Response
+import okio.Okio
+import org.koin.core.KoinComponent
 import routes.actions.bodies.ActionRequestBody
 import routes.actions.bodies.ThreadRepliesResponseBody
 import routes.actions.bodies.ThreadRepliesResponseBody.Message
@@ -27,10 +24,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import javax.xml.ws.http.HTTPException
 import kotlin.math.min
 
-class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
+class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call), KoinComponent {
 
     companion object {
         private const val SLACK_API_DOMAIN = "https://slack.com/api"
@@ -161,14 +157,12 @@ class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
     private suspend fun downloadAsTempFile(url: String): File {
         File("temp").mkdir()
         val file = File("temp/${File(url).name}").also { it.createNewFile() }
-        HttpClientCreator.create().use { client ->
-            val response = client.get<HttpResponse>(url) {
-                header("Authorization", "Bearer ${SlackSecrets.BOT_ACCESS_TOKEN}")
-            }
-            if (!response.status.isSuccess()) {
-                throw HTTPException(response.status.value)
-            }
-            response.content.copyAndClose(file.writeChannel())
+        SlackApiRequester.get<Response>(url).use {
+            val source = Okio.buffer(it.body()!!.source())
+            val sink = Okio.buffer(Okio.sink(file))
+            source.readAll(sink)
+            source.close()
+            sink.close()
         }
         return file
     }
