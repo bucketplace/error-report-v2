@@ -1,10 +1,10 @@
 package routes.versions.utils
 
-import secrets.GithubSecrets
 import db.versions.Version
+import secrets.GithubSecrets
 import utils.GithubApiRequester
 
-@Suppress("ComplexRedundantLet")
+@Suppress("ComplexRedundantLet", "BlockingMethodInNonBlockingContext")
 class AndroidVersionsGetter(versios: List<Version>) {
 
     companion object {
@@ -17,7 +17,7 @@ class AndroidVersionsGetter(versios: List<Version>) {
         it.name?.contains("And ") ?: false
     }
 
-    fun getWorkingVersions(): List<Version> {
+    suspend fun getWorkingVersions(): List<Version> {
         return listOfNotNull(
             getWorkingReleaseVersion(),
             getWorkingQaVersion(),
@@ -25,7 +25,7 @@ class AndroidVersionsGetter(versios: List<Version>) {
         )
     }
 
-    private fun getWorkingReleaseVersion(): Version? {
+    private suspend fun getWorkingReleaseVersion(): Version? {
         return getBuildGradleFileContent("master")
             .let { getVersionName(it) }
             .let { androidVersions.getWorkingVersion(it) }
@@ -33,9 +33,8 @@ class AndroidVersionsGetter(versios: List<Version>) {
             ?.also { it.name = "AOS 오늘의집 마켓출시버전(${it.name})" }
     }
 
-    private fun getBuildGradleFileContent(branch: String): String {
-        return GithubApiRequester.get(getBuildGradleUrl(branch)).body()?.string()
-            ?: throw Exception("build gradle text not found.")
+    private suspend fun getBuildGradleFileContent(branch: String): String {
+        return GithubApiRequester.get(getBuildGradleUrl(branch))
     }
 
     private fun getBuildGradleUrl(branch: String): String {
@@ -47,7 +46,7 @@ class AndroidVersionsGetter(versios: List<Version>) {
             ?: throw Exception("build gradle versionName not found.")
     }
 
-    private fun getWorkingQaVersion(): Version? {
+    private suspend fun getWorkingQaVersion(): Version? {
         return getBuildGradleFileContent("qa")
             .let { getVersionName(it) }
             .let { androidVersions.getWorkingVersion(it) }
@@ -55,7 +54,7 @@ class AndroidVersionsGetter(versios: List<Version>) {
             ?.also { it.name = "AOS 오늘의집 QA중(정규)버전(${it.name})" }
     }
 
-    private fun getWorkingHotfixVersion(): Version? {
+    private suspend fun getWorkingHotfixVersion(): Version? {
         return getBuildGradleFileContent("hotfix")
             .let { getVersionName(it) }
             .let { androidVersions.getWorkingVersion(it) }

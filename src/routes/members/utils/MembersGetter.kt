@@ -9,7 +9,6 @@ object MembersGetter {
     private const val MEMBERS_URL = "https://slack.com/api/users.list"
 
     suspend fun get(): List<Member> {
-        return SlackApiRequester.get<MembersResponseBody>(MEMBERS_URL)
-            .members
+        return SlackApiRequester.get<MembersResponseBody>(MEMBERS_URL).members
     }
 }

@@ -27,7 +27,7 @@ class MemberDao {
     }
 
     fun getMemberByNickname(nickname: String): Member {
-        return getMembers().find { it.profile!!.displayName == nickname } ?: throw Exception("Member not found.")
+        return getMembers().first { it.profile!!.displayName == nickname }
     }
 
     private fun getMembers(): List<Member> {

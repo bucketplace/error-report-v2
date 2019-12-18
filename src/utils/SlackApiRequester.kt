@@ -1,40 +1,21 @@
 package utils
 
-import io.ktor.client.request.header
-import io.ktor.client.request.request
-import io.ktor.http.ContentType.Application
-import io.ktor.http.HttpMethod
-import io.ktor.http.content.TextContent
+import okhttp3.Headers
+import okhttp3.OkHttpClient
+import org.koin.core.KoinComponent
 import secrets.SlackSecrets
 
 object SlackApiRequester {
 
-    suspend inline fun <reified T> get(
-        url: String,
-        accessToken: String = SlackSecrets.BOT_ACCESS_TOKEN
-    ): T {
-        return request(HttpMethod.Get, url, accessToken = accessToken)
+    suspend inline fun <reified T> get(url: String, accessToken: String = SlackSecrets.BOT_ACCESS_TOKEN): T {
+        return ApiRequester.request("GET", url, createHeaders(accessToken))
     }
 
-    suspend inline fun <reified T> request(
-        httpMethod: HttpMethod,
-        url: String,
-        jsonBody: String = "",
-        accessToken: String = SlackSecrets.BOT_ACCESS_TOKEN
-    ): T {
-        return HttpClientCreator.create().use { client ->
-            client.request(url) {
-                method = httpMethod
-                header("Authorization", "Bearer $accessToken")
-                body = TextContent(
-                    contentType = Application.Json,
-                    text = jsonBody
-                )
-            }
-        }
+    fun createHeaders(accessToken: String): Headers {
+        return Headers.of(mapOf("Authorization" to "Bearer $accessToken"))
     }
 
     suspend inline fun <reified T> post(url: String, jsonBody: String): T {
-        return request(HttpMethod.Post, url, jsonBody)
+        return ApiRequester.request("POST", url, createHeaders(SlackSecrets.BOT_ACCESS_TOKEN), jsonBody)
     }
 }

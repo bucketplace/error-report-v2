@@ -1,6 +1,6 @@
-package types
+package routes.versions.types
 
-data class CommitHash(
+data class Commit(
     val serverDomain: String,
     val hash: String
 )

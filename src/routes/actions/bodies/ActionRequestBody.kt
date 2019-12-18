@@ -12,7 +12,8 @@ data class ActionRequestBody(
         val files: List<File>?,
         val ts: String,
         val threadTs: String?,
-        val channel: String
+        val channel: String,
+        val user: String?
     ) {
         data class File(
             val mimetype: String,

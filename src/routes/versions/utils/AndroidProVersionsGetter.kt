@@ -4,7 +4,7 @@ import db.versions.Version
 import secrets.GithubSecrets
 import utils.GithubApiRequester
 
-@Suppress("ComplexRedundantLet")
+@Suppress("ComplexRedundantLet", "BlockingMethodInNonBlockingContext")
 class AndroidProVersionsGetter(versios: List<Version>) {
 
     companion object {
@@ -17,14 +17,14 @@ class AndroidProVersionsGetter(versios: List<Version>) {
         it.name?.contains("AndPro ") ?: false
     }
 
-    fun getWorkingVersions(): List<Version> {
+    suspend fun getWorkingVersions(): List<Version> {
         return listOfNotNull(
             getWorkingReleaseVersion(),
             getWorkingQaVersion()
         )
     }
 
-    private fun getWorkingReleaseVersion(): Version? {
+    private suspend fun getWorkingReleaseVersion(): Version? {
         return getBuildGradleFileContent("master")
             .let { getVersionName(it) }
             .let { androidProVersions.getWorkingVersion(it) }
@@ -32,9 +32,8 @@ class AndroidProVersionsGetter(versios: List<Version>) {
             ?.also { it.name = "AOS 전문가센터 마켓출시버전(${it.name})" }
     }
 
-    private fun getBuildGradleFileContent(branch: String): String {
-        return GithubApiRequester.get(getBuildGradleUrl(branch)).body()?.string()
-            ?: throw Exception("build gradle text not found.")
+    private suspend fun getBuildGradleFileContent(branch: String): String {
+        return GithubApiRequester.get(getBuildGradleUrl(branch))
     }
 
     private fun getBuildGradleUrl(branch: String): String {
@@ -46,7 +45,7 @@ class AndroidProVersionsGetter(versios: List<Version>) {
             ?: throw Exception("build gradle versionName not found.")
     }
 
-    private fun getWorkingQaVersion(): Version? {
+    private suspend fun getWorkingQaVersion(): Version? {
         return getBuildGradleFileContent("qa")
             .let { getVersionName(it) }
             .let { androidProVersions.getWorkingVersion(it) }

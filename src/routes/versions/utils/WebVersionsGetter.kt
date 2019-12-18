@@ -6,13 +6,12 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import routes.versions.bodies.CommitResponseBody
 import routes.versions.bodies.IssueResponseBody
+import routes.versions.types.Commit
 import secrets.AwsSecrets
 import secrets.GithubSecrets
 import secrets.JiraSecrets
-import types.CommitHash
 import utils.GithubApiRequester
 import utils.JiraApiRequester
-import utils.parseJson
 
 @Suppress("ComplexRedundantLet", "SimpleRedundantLet")
 class WebVersionsGetter(versios: List<Version>) {
@@ -73,18 +72,13 @@ class WebVersionsGetter(versios: List<Version>) {
             .body()!!.string()
     }
 
-    private fun getCommitHashs(commitHashsText: String): List<CommitHash> {
+    private fun getCommitHashs(commitHashsText: String): List<Commit> {
         return COMMIT_HASH_REGEX.findAll(commitHashsText).toList()
-            .map { CommitHash(it.groupValues[1], it.groupValues[2]) }
+            .map { Commit(it.groupValues[1], it.groupValues[2]) }
     }
 
-    private fun getCommitMessage(hash: String): String {
-        return GithubApiRequester.get(getCommitUrl(hash))
-            .body()!!
-            .string()
-            .parseJson<CommitResponseBody>()
-            .commit
-            .message
+    private suspend fun getCommitMessage(hash: String): String {
+        return GithubApiRequester.get<CommitResponseBody>(getCommitUrl(hash)).commit.message
     }
 
     private fun getCommitUrl(hash: String): String {
@@ -99,8 +93,7 @@ class WebVersionsGetter(versios: List<Version>) {
     }
 
     private suspend fun getIssue(issueKey: String): IssueResponseBody {
-        return JiraApiRequester.get<String>(getIssueUrl(issueKey))
-            .parseJson()
+        return JiraApiRequester.get(getIssueUrl(issueKey))
     }
 
     private fun getIssueUrl(issueKey: String): String {

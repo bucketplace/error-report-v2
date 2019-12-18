@@ -1,14 +1,8 @@
 package utils
 
 import io.jsonwebtoken.Jwts
-import io.ktor.util.InternalAPI
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.Headers
 import secrets.AppStoreSecrets
-import java.io.DataInputStream
-import java.io.File
-import java.io.FileInputStream
 import java.security.KeyFactory
 import java.security.PrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
@@ -18,15 +12,12 @@ import javax.xml.bind.DatatypeConverter
 
 object AppStoreApiRequester {
 
-        private const val PRIVATE_KEY_FILE_PATH = "/home/bsscco/error-report-v2/appstore-connect-api-private-key.p8"
-//    private const val PRIVATE_KEY_FILE_PATH = "./appstore-connect-api-private-key.p8"
+    suspend inline fun <reified T> get(url: String): T {
+        return ApiRequester.request("GET", url, createHeaders())
+    }
 
-    fun get(url: String): Response {
-        val request = Request.Builder()
-            .url(url)
-            .header("Authorization", "Bearer ${getJwtToken()}")
-            .build()
-        return OkHttpClient().newCall(request).execute()
+    fun createHeaders(): Headers {
+        return Headers.of(mapOf("Authorization" to "Bearer ${getJwtToken()}"))
     }
 
     private fun getJwtToken(): String {
@@ -41,18 +32,18 @@ object AppStoreApiRequester {
             .compact()
     }
 
-    @UseExperimental(InternalAPI::class)
     private fun loadPrivateKey(): PrivateKey {
-        val f = File(PRIVATE_KEY_FILE_PATH)
-        println(f.canonicalFile)
-        println(f.absolutePath)
-        val fis = FileInputStream(f)
-        val dis = DataInputStream(fis)
-        val keyBytes = ByteArray(f.length().toInt())
-        dis.readFully(keyBytes)
-        dis.close()
+//        val f = File(PRIVATE_KEY_FILE_PATH)
+//        println(f.canonicalFile)
+//        println(f.absolutePath)
+//        val fis = FileInputStream(f)
+//        val dis = DataInputStream(fis)
+//        val keyBytes = ByteArray(f.length().toInt())
+//        dis.readFully(keyBytes)
+//        dis.close()
 
-        val temp = String(keyBytes)
+//        val temp = String(keyBytes)
+        val temp = AppStoreSecrets.JWT_PRIVATE_KEY
         var privKeyPEM = temp.replace("-----BEGIN PRIVATE KEY-----", "")
         privKeyPEM = privKeyPEM.replace("-----END PRIVATE KEY-----", "")
         //System.out.println("Private key\n"+privKeyPEM);

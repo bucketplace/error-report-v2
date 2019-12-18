@@ -1,11 +1,9 @@
 package utils
 
-import io.ktor.client.request.post
-import io.ktor.client.response.HttpResponse
-import io.ktor.http.ContentType.Application
-import io.ktor.http.Headers
-import io.ktor.http.content.TextContent
-import io.ktor.util.toMap
+import okhttp3.Headers
+import okhttp3.OkHttpClient
+import okhttp3.Response
+import org.koin.core.KoinComponent
 import secrets.JiraSecrets
 
 object JiraAuthenticationCookieGetter {
@@ -13,23 +11,15 @@ object JiraAuthenticationCookieGetter {
     private const val LOGIN_URL = "${JiraSecrets.DOMAIN}/rest/auth/1/session"
 
     suspend fun get(): String {
-        val response = loginJira()
-        return getCookie(response.headers)
+        return getCookie(getLoginResponseHeaders())
     }
 
-    private suspend fun loginJira(): HttpResponse {
-        return HttpClientCreator.create().use { client ->
-            client.post(LOGIN_URL) {
-                body = TextContent(
-                    contentType = Application.Json,
-                    text = JiraSecrets.LOGIN_POST_BODY
-                )
-            }
-        }
+    private suspend fun getLoginResponseHeaders(): Headers {
+        return ApiRequester.request<Response>("POST", LOGIN_URL, jsonBody = JiraSecrets.LOGIN_POST_BODY).headers()
     }
 
     private fun getCookie(headers: Headers): String {
-        return headers.toMap().entries
+        return headers.toMultimap().entries
             .first { it.key.toLowerCase() == "set-cookie" }.value
             .joinToString("; ")
     }

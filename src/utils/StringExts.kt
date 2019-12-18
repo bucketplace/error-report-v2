@@ -1,5 +1,8 @@
 package utils
 
+import com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import org.json.JSONObject
 
 fun String.escapeNewLine(): String {
@@ -11,7 +14,10 @@ fun String.convertUtf8mb4(): String {
 }
 
 inline fun <reified T> String.parseJson(): T {
-    return GsonCreator.create().fromJson(this, T::class.java)
+    return GsonBuilder()
+        .setFieldNamingPolicy(LOWER_CASE_WITH_UNDERSCORES)
+        .create()
+        .fromJson(this, object : TypeToken<T>() {}.type)
 }
 
 fun String.toJson(): String {

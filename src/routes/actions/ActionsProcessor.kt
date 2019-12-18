@@ -1,6 +1,6 @@
 package routes.actions
 
-import enums.ActionType
+import enums.Action
 import io.ktor.application.ApplicationCall
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -18,6 +18,7 @@ import routes.actions.bodies.ThreadRepliesResponseBody
 import routes.actions.bodies.ThreadRepliesResponseBody.Message
 import routes.actions.utils.CommentAddingJsonCreator
 import routes.actions.utils.ReactionAddingJsonCreator
+import routes.actions.utils.RewardListJsonCreator
 import secrets.JiraSecrets
 import secrets.SlackSecrets
 import utils.*
@@ -32,9 +33,11 @@ import kotlin.math.min
 class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
 
     companion object {
-        private const val SLACK_DOMAIN = "https://slack.com/api"
-        private const val THREAD_REPLIES_URL = "$SLACK_DOMAIN/channels.replies"
-        private const val REACTION_ADDING_URL = "$SLACK_DOMAIN/reactions.add"
+        private const val SLACK_API_DOMAIN = "https://slack.com/api"
+        private const val THREAD_REPLIES_URL = "$SLACK_API_DOMAIN/channels.replies"
+        private const val REACTION_ADDING_URL = "$SLACK_API_DOMAIN/reactions.add"
+        private const val VIEW_PUBLISH_URL = "$SLACK_API_DOMAIN/views.publish"
+        private const val SEARCH_MESSAGES_URL = "$SLACK_API_DOMAIN/search.messages"
         private val ISSUE_KEY_REGEX = Regex("browse/(OK-\\d+)")
     }
 
@@ -54,11 +57,10 @@ class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
             respondChallenge()
         } else if (isEventCallback()) {
             respondAccepted()
-            if (isMessagePosted()) {
-                findReportIssueKey()?.let { issueKey ->
-                    postCommentToIssue(issueKey)
-                    addSyncReactionToMessage()
-                }
+            if (isAppHomeOpened()) {
+                handleAppHomeOpened()
+            } else if (isMessagePosted()) {
+                handleMessagePosted()
             } else if (isMessageChanged()) {
 //                updateComment(actionRequestBody.event.message!!.clientMsgId)
             } else if (isMessageDeleted()) {
@@ -68,7 +70,7 @@ class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
     }
 
     private fun isEventSubscriptionVerificationRequest(): Boolean {
-        return actionRequestBody.type == ActionType.URL_VERIFICATION.name.toLowerCase()
+        return actionRequestBody.type == Action.URL_VERIFICATION.name.toLowerCase()
     }
 
     private suspend fun respondChallenge() {
@@ -76,15 +78,47 @@ class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
     }
 
     private fun isEventCallback(): Boolean {
-        return actionRequestBody.type == ActionType.EVENT_CALLBACK.name.toLowerCase()
+        return actionRequestBody.type == Action.EVENT_CALLBACK.name.toLowerCase()
     }
 
     private suspend fun respondAccepted() {
         call.respond(status = HttpStatusCode.Accepted, message = "")
     }
 
+    private fun isAppHomeOpened(): Boolean {
+        return actionRequestBody.event.type == "app_home_opened"
+    }
+
+    private suspend fun handleAppHomeOpened() {
+        publishRewardList(getThisMonthReportMessages())
+    }
+
+    private suspend fun getThisMonthReportMessages(): List<String> {
+        val messages = ArrayList<String>()
+//        do {
+//            val response = SlackApiRequester.get<SearchResponseBody>(SEARCH_MESSAGES_URL)
+//                .members
+//        }while ()
+        return messages
+    }
+
+    private fun getSearchMessagedUrl(page: Int) {
+
+    }
+
+    private suspend fun publishRewardList(messages: List<String>) {
+        SlackApiRequester.post<Unit>(VIEW_PUBLISH_URL, RewardListJsonCreator.create(actionRequestBody.event.user!!))
+    }
+
     private fun isMessagePosted(): Boolean {
         return listOf(null, "file_share").any { it == actionRequestBody.event.subtype }
+    }
+
+    private suspend fun handleMessagePosted() {
+        findReportIssueKey()?.let { issueKey ->
+            postCommentToIssue(issueKey)
+            addSyncReactionToMessage()
+        }
     }
 
     private suspend fun findReportIssueKey(): String? {
@@ -92,9 +126,7 @@ class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
     }
 
     private suspend fun getThreadFirstMessage(): Message {
-        return SlackApiRequester.get<String>(getThreadRepliesUrl(), SlackSecrets.APP_ACCESS_TOKEN)
-            .parseJson<ThreadRepliesResponseBody>()
-            .messages[0]
+        return SlackApiRequester.get<ThreadRepliesResponseBody>(getThreadRepliesUrl(), SlackSecrets.APP_ACCESS_TOKEN).messages[0]
     }
 
     private fun getThreadRepliesUrl(): String {
@@ -113,7 +145,7 @@ class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
 
     private suspend fun postCommentToIssue(issueKey: String) {
         val json = createCommentAddingJson(uploadFiles(issueKey))
-        JiraApiRequester.post<HttpResponse>(getCommentAddingUrl(issueKey), json)
+        JiraApiRequester.post<Unit>(getCommentAddingUrl(issueKey), json)
     }
 
     private suspend fun uploadFiles(issueKey: String): ArrayList<String>? {
@@ -268,7 +300,7 @@ class ActionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
     }
 
     private suspend fun addSyncReactionToMessage() {
-        SlackApiRequester.post<HttpResponse>(REACTION_ADDING_URL, createReactionAddingJson())
+        SlackApiRequester.post<Unit>(REACTION_ADDING_URL, createReactionAddingJson())
     }
 
     private fun createReactionAddingJson(): String {

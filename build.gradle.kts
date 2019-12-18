@@ -56,6 +56,10 @@ dependencies {
     runtime("io.jsonwebtoken:jjwt-jackson:0.10.7")
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:2.3.2") // base64 decoder
     implementation("org.glassfish.jaxb:jaxb-runtime:2.3.2") // base64 decoder
+
+    val koinVersion = "2.0.1"
+    implementation("org.koin:koin-core:$koinVersion")
+    implementation("org.koin:koin-core-ext:$koinVersion")
 }
 
 kotlin.sourceSets["main"].kotlin.srcDirs("src")

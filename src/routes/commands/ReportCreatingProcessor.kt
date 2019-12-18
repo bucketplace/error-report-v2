@@ -37,7 +37,6 @@ class ReportCreatingProcessor(call: ApplicationCall) : RequestProcessor(call) {
     }
 
     private suspend fun openReportModal() {
-        val json = ReportModalJsonCreator.create(triggerId)
-        SlackApiRequester.post<HttpResponse>(VIEW_OPEN_URL, json)
+        SlackApiRequester.post<Unit>(VIEW_OPEN_URL, ReportModalJsonCreator.create(triggerId))
     }
 }
