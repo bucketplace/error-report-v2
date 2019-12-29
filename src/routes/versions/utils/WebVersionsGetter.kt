@@ -1,15 +1,14 @@
 package routes.versions.utils
 
 import db.versions.Version
-import enums.Server
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import routes.versions.bodies.CommitResponseBody
-import routes.versions.bodies.IssueResponseBody
-import routes.versions.types.Commit
+import enums.Platform
+import enums.Server.PRODUCTION
+import routes.versions.responses.CommitGettingResponseBody
+import routes.versions.responses.IssueGettingResponseBody
 import secrets.AwsSecrets
 import secrets.GithubSecrets
 import secrets.JiraSecrets
+import utils.ApiRequester
 import utils.GithubApiRequester
 import utils.JiraApiRequester
 
@@ -22,24 +21,29 @@ class WebVersionsGetter(versios: List<Version>) {
         private val ISSUE_VERSION_NAME_REGEX = Regex("(\\d+\\.\\d+\\.\\d+\\.\\d+)")
     }
 
+    private data class Commit(
+        val serverDomain: String,
+        val hash: String
+    )
+
     private val webVersions = versios.filter {
         it.name?.contains("Web ") ?: false
     }
 
-    suspend fun getWorkingVersions(): List<Version> {
-        return ArrayList<Version>().apply {
-            add(getReleaseWorkingVersion())
-            addAll(getQaOrHotfixWorkingVersions())
+    suspend fun getLatestVersions(): List<Version> {
+        return mutableListOf<Version>().apply {
+            add(getLatestReleaseVersion())
+            addAll(getLatestQaOrHotfixVersions())
         }
     }
 
-    private fun getReleaseWorkingVersion(): Version {
+    private fun getLatestReleaseVersion(): Version {
         return webVersions
             .filter { it.released }
             .maxBy { getVersionNameValue(it) }
             ?.copy()
-            ?.also { it.name = "Web [${Server.PRODUCTION.domain}](${it.name})" }
-            ?: throw Exception("release working version not found.")
+            ?.also { it.name = getReleaseName(it) }
+            ?: throw Exception("latest release version not found.")
     }
 
     private fun getVersionNameValue(version: Version): Int {
@@ -49,7 +53,11 @@ class WebVersionsGetter(versios: List<Version>) {
             ?: Int.MAX_VALUE
     }
 
-    private suspend fun getQaOrHotfixWorkingVersions(): List<Version> {
+    private fun getReleaseName(version: Version): String {
+        return "${Platform.WEB.shortName} [${PRODUCTION.domain}](${version.name})"
+    }
+
+    private suspend fun getLatestQaOrHotfixVersions(): List<Version> {
         return getCommitHashsText()
             .let { getCommitHashs(it) }
             .mapNotNull { commitHash ->
@@ -58,18 +66,14 @@ class WebVersionsGetter(versios: List<Version>) {
                     ?.let { getIssue(it) }
                     ?.takeIf { it.isWebIssue() }
                     ?.let { it.getVersionName() }
-                    ?.let { webVersions.getWorkingVersion(it) }
+                    ?.let { webVersions.getLatestVersion(it) }
                     ?.copy()
-                    ?.also { it.name = "Web [${commitHash.serverDomain}](${it.name})" }
+                    ?.also { it.name = getQaOrHotfixName(commitHash, it) }
             }
     }
 
-    private fun getCommitHashsText(): String {
-        val request = Request.Builder()
-            .url(AwsSecrets.WEB_SERVER_COMMIT_HASHS_URL)
-            .build()
-        return OkHttpClient().newCall(request).execute()
-            .body()!!.string()
+    private suspend fun getCommitHashsText(): String {
+        return ApiRequester.request<String>("GET", AwsSecrets.WEB_SERVER_COMMIT_HASHS_URL)
     }
 
     private fun getCommitHashs(commitHashsText: String): List<Commit> {
@@ -78,7 +82,7 @@ class WebVersionsGetter(versios: List<Version>) {
     }
 
     private suspend fun getCommitMessage(hash: String): String {
-        return GithubApiRequester.get<CommitResponseBody>(getCommitUrl(hash)).commit.message
+        return GithubApiRequester.get<CommitGettingResponseBody>(getCommitUrl(hash)).commit.message
     }
 
     private fun getCommitUrl(hash: String): String {
@@ -92,7 +96,7 @@ class WebVersionsGetter(versios: List<Version>) {
             ?.get(1)
     }
 
-    private suspend fun getIssue(issueKey: String): IssueResponseBody {
+    private suspend fun getIssue(issueKey: String): IssueGettingResponseBody {
         return JiraApiRequester.get(getIssueUrl(issueKey))
     }
 
@@ -100,13 +104,17 @@ class WebVersionsGetter(versios: List<Version>) {
         return "${JiraSecrets.DOMAIN}/rest/api/2/issue/$issueKey"
     }
 
-    private fun IssueResponseBody.isWebIssue(): Boolean {
+    private fun IssueGettingResponseBody.isWebIssue(): Boolean {
         return fields.components.firstOrNull()?.name == "Web"
     }
 
-    private fun IssueResponseBody.getVersionName(): String? {
+    private fun IssueGettingResponseBody.getVersionName(): String? {
         return fields.fixVersions.firstOrNull()?.name?.let {
             ISSUE_VERSION_NAME_REGEX.find(it)?.groupValues?.get(1)
         }
+    }
+
+    private fun getQaOrHotfixName(commitHash: Commit, version: Version): String {
+        return "${Platform.WEB.shortName} [${commitHash.serverDomain}](${version.name})"
     }
 }

@@ -5,7 +5,7 @@ import utils.convertUtf8mb4
 import utils.escapeNewLine
 import utils.toJson
 
-class MessageLinkAppendingJsonCreator(
+class MessageLinkAppendedDescriptionJsonCreator(
     private val channelId: String,
     private val messageTs: String,
     private val description: String

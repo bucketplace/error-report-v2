@@ -10,12 +10,12 @@ object VersionsGetter {
 
     suspend fun getWorkingVersions(): List<Version> {
         val allVersions = getAllVersions()
-        return ArrayList<Version>().apply {
-            addAll(IosVersionsGetter(allVersions).getWorkingVersions())
-            addAll(AndroidVersionsGetter(allVersions).getWorkingVersions())
-            addAll(WebVersionsGetter(allVersions).getWorkingVersions())
-            addAll(ServerVersionsGetter(allVersions).getWorkingVersions())
-            addAll(AndroidProVersionsGetter(allVersions).getWorkingVersions())
+        return mutableListOf<Version>().apply {
+            addAll(IosVersionsGetter(allVersions).getLatestVersions())
+            addAll(AndroidVersionsGetter(allVersions).getLatestVersions())
+            addAll(WebVersionsGetter(allVersions).getLatestVersions())
+            addAll(ServerVersionsGetter(allVersions).getLatestVersions())
+            addAll(AndroidProVersionsGetter(allVersions).getLatestVersions())
         }
     }
 

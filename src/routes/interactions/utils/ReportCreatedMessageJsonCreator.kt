@@ -3,14 +3,14 @@ package routes.interactions.utils
 import db.members.MemberDao
 import enums.Developer
 import enums.Track
-import routes.interactions.bodies.ViewSubmissionRequestBody
+import routes.interactions.requests.InteractionRequestBody
 import secrets.JiraSecrets
 import utils.SlackJsonCreator.createMarkdownText
 import utils.escapeNewLine
 import utils.toJson
 
 class ReportCreatedMessageJsonCreator(
-    private val viewSubmissionRequestBody: ViewSubmissionRequestBody,
+    private val requestBody: InteractionRequestBody,
     private val slackChannelId: String,
     private val issueKey: String
 ) {
@@ -33,13 +33,13 @@ class ReportCreatedMessageJsonCreator(
     """
 
     private fun createFieldsSection(): String {
-        val submissionValues = viewSubmissionRequestBody.view.state.values
+        val submissionValues = requestBody.view.state.values
         return """
             {
                 "type": "section",
                 "text": ${createMarkdownText(
             StringBuffer().apply {
-                append(createField("보고자", "<@${viewSubmissionRequestBody.user.id}>"))
+                append(createField("보고자", "<@${requestBody.user.id}>"))
                 append(createField("발생 경로", submissionValues.path.action.value!!))
                 append(createField("오류 현상", submissionValues.situation.action.value!!))
                 append(createField("기대 결과", submissionValues.expectedResult.action.value ?: "-"))

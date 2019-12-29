@@ -1,6 +1,6 @@
-package routes.versions.bodies
+package routes.versions.responses
 
-data class VersionsResponseBody(
+data class VersionsGettingResponseBody(
     val data: List<Data>
 ) {
     data class Data(

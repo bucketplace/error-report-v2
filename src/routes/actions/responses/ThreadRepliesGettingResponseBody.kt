@@ -1,6 +1,6 @@
-package routes.actions.bodies
+package routes.actions.responses
 
-data class ThreadRepliesResponseBody(
+data class ThreadRepliesGettingResponseBody(
     val messages: List<Message>
 ) {
     data class Message(

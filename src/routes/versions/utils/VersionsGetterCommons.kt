@@ -4,7 +4,7 @@ import db.versions.Version
 
 private val VERSION_NAME_REGEX = Regex("(\\d+\\.\\d+(\\.\\d+)?(\\.\\d+)?)")
 
-fun List<Version>.getWorkingVersion(versionName: String): Version? { // 핫픽스 버전은 지라에 등록되지 않기도 해서 null을 고려함.
+fun List<Version>.getLatestVersion(versionName: String): Version? { // 핫픽스 버전은 지라에 등록되지 않기도 해서 null을 고려함.
     return this.find { it.getVersionName() == versionName }
 }
 

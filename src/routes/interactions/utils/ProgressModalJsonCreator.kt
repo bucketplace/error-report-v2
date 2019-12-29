@@ -13,8 +13,7 @@ object ProgressModalJsonCreator {
         }
     """.toJson()
 
-}
-private fun createView() = """
+    private fun createView() = """
         {
             "type": "modal",
             "callback_id": "${CallbackId.CLOSE_PROGRESS_MODAL.name.toLowerCase()}",
@@ -24,3 +23,4 @@ private fun createView() = """
             "blocks": []
         }
     """
+}

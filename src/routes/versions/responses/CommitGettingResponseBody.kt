@@ -1,6 +1,6 @@
-package routes.versions.bodies
+package routes.versions.responses
 
-data class CommitResponseBody(
+data class CommitGettingResponseBody(
     val commit: Commit
 ) {
     data class Commit(

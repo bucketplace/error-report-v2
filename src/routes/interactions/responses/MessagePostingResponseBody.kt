@@ -1,4 +1,4 @@
-package routes.interactions.bodies
+package routes.interactions.responses
 
 data class MessagePostingResponseBody(
     val ok: Boolean,

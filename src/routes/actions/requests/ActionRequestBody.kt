@@ -1,4 +1,4 @@
-package routes.actions.bodies
+package routes.actions.requests
 
 data class ActionRequestBody(
     val type: String,

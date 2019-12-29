@@ -1,8 +1,9 @@
 package routes.versions.utils
 
 import db.versions.Version
-import routes.versions.bodies.VersionsResponseBody
-import routes.versions.bodies.VersionsResponseBody.Data
+import enums.Platform
+import routes.versions.responses.VersionsGettingResponseBody
+import routes.versions.responses.VersionsGettingResponseBody.Data
 import secrets.GithubSecrets
 import utils.AppStoreApiRequester
 import utils.GithubApiRequester
@@ -23,20 +24,20 @@ class IosVersionsGetter(versios: List<Version>) {
         it.name?.contains("iOS ") ?: false
     }
 
-    suspend fun getWorkingVersions(): List<Version> {
+    suspend fun getLatestVersions(): List<Version> {
         return listOfNotNull(
-            getWorkingReleaseVersion(),
-            getWorkingQaVersion(),
-            getWorkingHotfixVersion()
+            getLatestReleaseVersion(),
+            getLatestQaVersion(),
+            getLatestHotfixVersion()
         )
     }
 
-    private suspend fun getWorkingReleaseVersion(): Version? {
+    private suspend fun getLatestReleaseVersion(): Version? {
         return getMasterBranchProjectPbxprojFileContent()
             .let { getVersionName(it) }
-            .let { iosVersions.getWorkingVersion(it) }
+            .let { iosVersions.getLatestVersion(it) }
             ?.copy()
-            ?.also { it.name = "iOS 마켓출시버전(${it.name})" }
+            ?.also { it.name = getReleaseName(it) }
     }
 
     private suspend fun getMasterBranchProjectPbxprojFileContent(): String {
@@ -48,34 +49,46 @@ class IosVersionsGetter(versios: List<Version>) {
             ?: throw Exception("project pbxproj versionName not found.")
     }
 
-    private suspend fun getWorkingQaVersion(): Version? {
+    private fun getReleaseName(version: Version): String {
+        return "${Platform.IOS.shortName} 마켓출시버전(${version.name})"
+    }
+
+    private suspend fun getLatestQaVersion(): Version? {
         return getTestFlightVersions()
-            .let { it.getWorkingTestFlightVersion(TEST_FLIGHT_QA_VERSION_NAME_REGEX) }
+            .let { it.getLatestTestFlightVersion(TEST_FLIGHT_QA_VERSION_NAME_REGEX) }
             .let { it.getTestFlightVersionName(TEST_FLIGHT_QA_VERSION_NAME_REGEX)!! }
-            .let { iosVersions.getWorkingVersion(it) }
+            .let { iosVersions.getLatestVersion(it) }
             ?.copy()
-            ?.also { it.name = "iOS QA중(정규)버전(${it.name})" }
+            ?.also { it.name = getQaVersion(it) }
+    }
+
+    private fun getQaVersion(version: Version): String {
+        return "${Platform.IOS.shortName} QA중(정규)버전(${version.name})"
     }
 
     private suspend fun getTestFlightVersions(): List<Data> {
-        return AppStoreApiRequester.get<VersionsResponseBody>(TEST_FLIGHT_VERSIONS_URL).data
+        return AppStoreApiRequester.get<VersionsGettingResponseBody>(TEST_FLIGHT_VERSIONS_URL).data
     }
 
-    private fun List<Data>.getWorkingTestFlightVersion(versionNameRegex: Regex): Data {
+    private fun List<Data>.getLatestTestFlightVersion(versionNameRegex: Regex): Data {
         return this.find { it.getTestFlightVersionName(versionNameRegex)?.isNotBlank() ?: false }
-            ?: throw Exception("working test flight version not found.")
+            ?: throw Exception("latest test flight version not found.")
     }
 
     private fun Data.getTestFlightVersionName(versionNameRegex: Regex): String? {
         return versionNameRegex.find(this.attributes.version)?.groupValues?.get(1)
     }
 
-    private suspend fun getWorkingHotfixVersion(): Version? {
+    private suspend fun getLatestHotfixVersion(): Version? {
         return getTestFlightVersions()
-            .let { it.getWorkingTestFlightVersion(TEST_FLIGHT_HOTFIX_VERSION_NAME_REGEX) }
+            .let { it.getLatestTestFlightVersion(TEST_FLIGHT_HOTFIX_VERSION_NAME_REGEX) }
             .let { it.getTestFlightVersionName(TEST_FLIGHT_HOTFIX_VERSION_NAME_REGEX) }
-            ?.let { iosVersions.getWorkingVersion(it) }
+            ?.let { iosVersions.getLatestVersion(it) }
             ?.copy()
-            ?.also { it.name = "iOS QA중(핫픽스)버전(${it.name})" }
+            ?.also { it.name = getHotfixName(it) }
+    }
+
+    private fun getHotfixName(version: Version): String {
+        return "${Platform.IOS.shortName} QA중(핫픽스)버전(${version.name})"
     }
 }

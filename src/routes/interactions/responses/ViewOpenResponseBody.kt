@@ -1,4 +1,4 @@
-package routes.interactions.bodies
+package routes.interactions.responses
 
 data class ViewOpenResponseBody(
     val ok: Boolean,

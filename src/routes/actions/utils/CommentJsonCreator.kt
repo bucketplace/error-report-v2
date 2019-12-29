@@ -4,10 +4,11 @@ import db.members.MemberDao
 import utils.escapeNewLine
 import utils.toJson
 
-class CommentAddingJsonCreator(
+class CommentJsonCreator(
     private val text: String,
     private val attachments: List<String>?
 ) {
+
     companion object {
         private val USER_MENTION_REGEX = Regex("<@(.+?)>")
     }

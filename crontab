@@ -1,0 +1,4 @@
+* * * * * /home/bsscco/error-report-v2/chkproc.sh > /home/bsscco/error-report-v2/crontab-chkproc.log 2>&1
+0 3,9,12,18 * * * curl localhost:19000/versions/update
+0 3 * * * curl localhost:19000/members/update
+0 3 * * * curl localhost:19000/home/update

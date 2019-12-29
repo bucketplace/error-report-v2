@@ -14,6 +14,7 @@ import org.koin.core.context.startKoin
 import org.slf4j.event.Level
 import routes.actions.actions
 import routes.commands.commands
+import routes.home.home
 import routes.interactions.interactions
 import routes.members.utils.MembersGetter
 import routes.members.members
@@ -54,5 +55,6 @@ fun Application.module(testing: Boolean = false) {
         interactions()
         members()
         versions()
+        home()
     }
 }

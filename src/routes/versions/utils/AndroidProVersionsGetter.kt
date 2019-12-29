@@ -1,6 +1,7 @@
 package routes.versions.utils
 
 import db.versions.Version
+import enums.Platform
 import secrets.GithubSecrets
 import utils.GithubApiRequester
 
@@ -17,19 +18,19 @@ class AndroidProVersionsGetter(versios: List<Version>) {
         it.name?.contains("AndPro ") ?: false
     }
 
-    suspend fun getWorkingVersions(): List<Version> {
+    suspend fun getLatestVersions(): List<Version> {
         return listOfNotNull(
-            getWorkingReleaseVersion(),
-            getWorkingQaVersion()
+            getLatestReleaseVersion(),
+            getLatestQaVersion()
         )
     }
 
-    private suspend fun getWorkingReleaseVersion(): Version? {
+    private suspend fun getLatestReleaseVersion(): Version? {
         return getBuildGradleFileContent("master")
             .let { getVersionName(it) }
-            .let { androidProVersions.getWorkingVersion(it) }
+            .let { androidProVersions.getLatestVersion(it) }
             ?.copy()
-            ?.also { it.name = "AOS 전문가센터 마켓출시버전(${it.name})" }
+            ?.also { it.name = getReleaseName(it) }
     }
 
     private suspend fun getBuildGradleFileContent(branch: String): String {
@@ -45,11 +46,19 @@ class AndroidProVersionsGetter(versios: List<Version>) {
             ?: throw Exception("build gradle versionName not found.")
     }
 
-    private suspend fun getWorkingQaVersion(): Version? {
+    private fun getReleaseName(version: Version): String {
+        return "${Platform.ANDROID.shortName} 전문가센터 마켓출시버전(${version.name})"
+    }
+
+    private suspend fun getLatestQaVersion(): Version? {
         return getBuildGradleFileContent("qa")
             .let { getVersionName(it) }
-            .let { androidProVersions.getWorkingVersion(it) }
+            .let { androidProVersions.getLatestVersion(it) }
             ?.copy()
-            ?.also { it.name = "AOS 전문가센터 QA중(정규)버전(${it.name})" }
+            ?.also { it.name = getQaName(it) }
+    }
+
+    private fun getQaName(version: Version): String {
+        return "${Platform.ANDROID.shortName} 전문가센터 QA중(정규)버전(${version.name})"
     }
 }

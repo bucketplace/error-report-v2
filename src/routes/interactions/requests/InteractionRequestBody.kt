@@ -1,6 +1,6 @@
-package routes.interactions.bodies
+package routes.interactions.requests
 
-data class ViewSubmissionRequestBody(
+data class InteractionRequestBody(
     val user: User,
     val triggerId: String,
     val view: View

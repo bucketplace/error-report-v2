@@ -1,8 +1,8 @@
-package routes.versions.bodies
+package routes.versions.responses
 
 import com.google.gson.annotations.SerializedName
 
-data class IssueResponseBody(
+data class IssueGettingResponseBody(
     val fields: Fields
 ) {
     data class Fields(

@@ -15,7 +15,11 @@ object JiraAuthenticationCookieGetter {
     }
 
     private suspend fun getLoginResponseHeaders(): Headers {
-        return ApiRequester.request<Response>("POST", LOGIN_URL, jsonBody = JiraSecrets.LOGIN_POST_BODY).headers()
+        return ApiRequester.request<Response>("POST", LOGIN_URL, jsonBody = JiraSecrets.LOGIN_POST_BODY)
+            .let {
+                it.close()
+                it.headers()
+            }
     }
 
     private fun getCookie(headers: Headers): String {

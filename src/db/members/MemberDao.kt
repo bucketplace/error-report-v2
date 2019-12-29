@@ -22,15 +22,15 @@ class MemberDao {
         jsonDb.insert(members, Member::class.java)
     }
 
+    fun getMembers(): List<Member> {
+        return jsonDb.getCollection(Member::class.java)
+    }
+
     fun getMember(id: String): Member {
         return jsonDb.findById<Member>(id, Member::class.java)
     }
 
     fun getMemberByNickname(nickname: String): Member {
         return getMembers().first { it.profile!!.displayName == nickname }
-    }
-
-    private fun getMembers(): List<Member> {
-        return jsonDb.getCollection(Member::class.java)
     }
 }

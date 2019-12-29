@@ -2,7 +2,7 @@ package routes.actions.utils
 
 import utils.toJson
 
-object ReactionAddingJsonCreator {
+object ReactionJsonCreator {
 
     fun create(channelId: String, messageTs: String) = """
         {

@@ -1,15 +1,13 @@
-package routes.actions.bodies
+package routes.home.responses
 
-data class SearchResponseBody(
-    val ok: Boolean,
-    val query: String,
+data class SearchingResponseBody(
     val messages: Messages
 ) {
     data class Messages(
         val total: Int,
         val pagination: Pagination,
         val paging: Paging,
-        val matches: List<Matche>
+        val matches: List<Match>
     ) {
         data class Pagination(
             val total_count: Int,
@@ -27,17 +25,9 @@ data class SearchResponseBody(
             val pages: Int
         )
 
-        data class Matche(
-            val channel: Channel,
-            val username: String,
-            val ts: String,
-            val blocks: List<Block>
+        data class Match(
+            val blocks: List<Block>?
         ) {
-            data class Channel(
-                val id: String,
-                val name: String
-            )
-
             data class Block(
                 val text: Text
             ) {

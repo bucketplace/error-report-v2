@@ -6,7 +6,7 @@ import db.versions.VersionDao
 import enums.*
 import enums.Channel.WEB_RELEASE
 import kotlinx.coroutines.runBlocking
-import routes.interactions.bodies.ViewSubmissionRequestBody
+import routes.interactions.requests.InteractionRequestBody
 import routes.versions.utils.ServerVersionsGetter
 import routes.versions.utils.VersionsGetter
 import utils.convertUtf8mb4
@@ -15,7 +15,7 @@ import utils.toJson
 import kotlin.math.min
 
 class ReportIssueJsonCreator(
-    viewSubmissionRequestBody: ViewSubmissionRequestBody
+    requestBody: InteractionRequestBody
 ) {
 
     companion object {
@@ -39,7 +39,7 @@ class ReportIssueJsonCreator(
     private val reporterNickname: String
 
     init {
-        val submissionValues = viewSubmissionRequestBody.view.state.values
+        val submissionValues = requestBody.view.state.values
         path = submissionValues.path.action.value!!
         situation = submissionValues.situation.action.value!!
         expectedResult = submissionValues.expectedResult.action.value
@@ -54,7 +54,7 @@ class ReportIssueJsonCreator(
         track = Track.get(submissionValues.track.action.selectedOption!!.value)
         developer = Developer.get(submissionValues.developer.action.selectedOption!!.value)
         channel = Channel.get(submissionValues.channel.action.selectedOption!!.value)
-        reporterNickname = MemberDao().getMember(viewSubmissionRequestBody.user.id).profile!!.displayName!!
+        reporterNickname = MemberDao().getMember(requestBody.user.id).profile!!.displayName!!
     }
 
     private suspend fun getVersion(displayName: String): Version {

@@ -8,10 +8,10 @@ import io.ktor.http.Parameters
 import io.ktor.request.receive
 import io.ktor.response.respond
 import kotlinx.coroutines.runBlocking
-import routes.interactions.bodies.IssueCreatingResponseBody
-import routes.interactions.bodies.MessagePostingResponseBody
-import routes.interactions.bodies.ViewOpenResponseBody
-import routes.interactions.bodies.ViewSubmissionRequestBody
+import routes.interactions.responses.IssueCreatingResponseBody
+import routes.interactions.responses.MessagePostingResponseBody
+import routes.interactions.responses.ViewOpenResponseBody
+import routes.interactions.requests.InteractionRequestBody
 import routes.interactions.utils.*
 import secrets.JiraSecrets
 import utils.JiraApiRequester
@@ -22,22 +22,19 @@ import utils.parseJson
 class InteractionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
 
     companion object {
-        private const val API_DOMAIN = "https://slack.com/api"
-        private const val VIEW_OPEN_URL = "$API_DOMAIN/views.open"
-        private const val VIEW_UPDATE_URL = "$API_DOMAIN/views.update"
-        private const val MESSAGE_POSTING_URL = "$API_DOMAIN/chat.postMessage"
+        private const val SLACK_API_DOMAIN = "https://slack.com/api"
+        private const val VIEW_OPEN_URL = "$SLACK_API_DOMAIN/views.open"
+        private const val VIEW_UPDATING_URL = "$SLACK_API_DOMAIN/views.update"
+        private const val MESSAGE_POSTING_URL = "$SLACK_API_DOMAIN/chat.postMessage"
         private const val ISSUE_CREATING_URL = "${JiraSecrets.DOMAIN}/rest/api/2/issue"
         private const val BSSCCO_TEST_2_CHANEL_ID = "CQ15ND811"
     }
 
-    private val viewSubmissionRequestBody: ViewSubmissionRequestBody = runBlocking {
-        try {
-            call.receive<Parameters>()["payload"]!!
-                .also { println(it) }
-                .parseJson<ViewSubmissionRequestBody>()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw e
+    private val requestBody = getRequestBody()
+
+    private fun getRequestBody(): InteractionRequestBody {
+        return runBlocking {
+            call.receive<Parameters>()["payload"]!!.parseJson<InteractionRequestBody>()
         }
     }
 
@@ -46,7 +43,7 @@ class InteractionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
             respondAccepted()
             progressWithProgressModal {
                 val issueKey = createReportIssueAndDoTodoTranslation()
-                val messageTs = postMessageReportCreated(issueKey)
+                val messageTs = postReportCreatedMessage(issueKey)
                 // TODO 우선순위 HIGHEST는 SavedMessage의 슬랙링크를 PO채널에 보내야 함
                 appendMessageLinkToIssue(issueKey, messageTs)
             }
@@ -54,7 +51,7 @@ class InteractionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
     }
 
     private fun isReportCreatingRequest(): Boolean {
-        return viewSubmissionRequestBody.view.callbackId == CREATE_REPORT.name.toLowerCase()
+        return requestBody.view.callbackId == CREATE_REPORT.name.toLowerCase()
     }
 
     private suspend fun respondAccepted() {
@@ -68,17 +65,18 @@ class InteractionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
     }
 
     private suspend fun openProgressModal(): String {
-        val json = ProgressModalJsonCreator.create(viewSubmissionRequestBody.triggerId)
+        val json = ProgressModalJsonCreator.create(requestBody.triggerId)
         return SlackApiRequester.post<ViewOpenResponseBody>(VIEW_OPEN_URL, json).view.id
     }
 
     private suspend fun createReportIssueAndDoTodoTranslation(): String {
-        return createReportIssue()
-            .also { issueKey -> doTodoTransition(issueKey) }
+        return createReportIssue().also { issueKey ->
+            doTodoTransition(issueKey)
+        }
     }
 
     private suspend fun createReportIssue(): String {
-        val json = ReportIssueJsonCreator(viewSubmissionRequestBody).createJson()
+        val json = ReportIssueJsonCreator(requestBody).createJson()
         return JiraApiRequester.post<IssueCreatingResponseBody>(ISSUE_CREATING_URL, json).key
     }
 
@@ -91,29 +89,29 @@ class InteractionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
         return "${JiraSecrets.DOMAIN}/rest/api/2/issue/$issueKey/transitions"
     }
 
-    private suspend fun postMessageReportCreated(issueKey: String): String {
-        val json = ReportCreatedMessageJsonCreator(viewSubmissionRequestBody, getSlackChannelId(), issueKey).create()
+    private suspend fun postReportCreatedMessage(issueKey: String): String {
+        val json = ReportCreatedMessageJsonCreator(requestBody, getSlackChannelId(), issueKey).create()
         return SlackApiRequester.post<MessagePostingResponseBody>(MESSAGE_POSTING_URL, json).ts
     }
 
     private fun getSlackChannelId(): String {
-        viewSubmissionRequestBody.view.state.values.run {
+        requestBody.view.state.values.run {
             if (situation.action.value == "tttt") return BSSCCO_TEST_2_CHANEL_ID
             return Channel.get(channel.action.selectedOption!!.value).slackChannelId
         }
     }
 
     private suspend fun appendMessageLinkToIssue(issueKey: String, messageTs: String) {
-        val description = ReportIssueJsonCreator(viewSubmissionRequestBody).createDescription()
-        val json = MessageLinkAppendingJsonCreator(getSlackChannelId(), messageTs, description).create()
-        JiraApiRequester.put<Unit>(getIssueApiUrl(issueKey), json)
+        val description = ReportIssueJsonCreator(requestBody).createDescription()
+        val json = MessageLinkAppendedDescriptionJsonCreator(getSlackChannelId(), messageTs, description).create()
+        JiraApiRequester.put<Unit>(getIssueUpdatingUrl(issueKey), json)
     }
 
-    private fun getIssueApiUrl(issueKey: String): String {
+    private fun getIssueUpdatingUrl(issueKey: String): String {
         return "${JiraSecrets.DOMAIN}/rest/api/2/issue/$issueKey"
     }
 
     private suspend fun updateWithCompleteModal(viewId: String) {
-        SlackApiRequester.post<Unit>(VIEW_UPDATE_URL, CompleteModalJsonCreator.create(viewId))
+        SlackApiRequester.post<Unit>(VIEW_UPDATING_URL, CompleteModalJsonCreator.create(viewId))
     }
 }
