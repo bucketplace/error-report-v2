@@ -136,7 +136,7 @@ class ReportIssueJsonCreator(
     }
 
     fun createDescription(): String {
-        return StringBuffer().apply {
+        return buildString {
             append("\nh2. 보고자\n\n${reporterNickname}")
             append("\nh2. 발생 경로\n\n${path}")
             append("\nh2. 오류 현상\n\n${situation}")
@@ -150,7 +150,7 @@ class ReportIssueJsonCreator(
             append("\nh2. 예상 담당트랙\n\n${track.displayName}")
             append("\nh2. 예상 담당개발자\n\n${developer.displayName}")
             append("\nh2. 리포팅 채널\n\n${channel.displayName}")
-        }.toString()
+        }
             .convertUtf8mb4()
             .escapeNewLine()
     }

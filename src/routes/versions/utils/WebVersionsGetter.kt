@@ -105,7 +105,7 @@ class WebVersionsGetter(versios: List<Version>) {
     }
 
     private fun IssueGettingResponseBody.isWebIssue(): Boolean {
-        return fields.components.firstOrNull()?.name == "Web"
+        return fields.components.any { it.name == "Web" }
     }
 
     private fun IssueGettingResponseBody.getVersionName(): String? {

@@ -37,7 +37,14 @@ object SlackJsonCreator {
         }
     """.toJson()
 
-    fun createSelectBlock(blockId: String, label: String, placeholder: String, options: String, optional: Boolean) = """
+    fun createSelectBlock(
+        blockId: String,
+        label: String,
+        placeholder: String,
+        options: String,
+        hint: String = createPlainText(" "),
+        optional: Boolean
+    ) = """
         {
             "type": "input",
             "block_id": "$blockId",
@@ -48,6 +55,7 @@ object SlackJsonCreator {
                 "placeholder": $placeholder,
                 "options": $options
             },
+            "hint": $hint,
             "optional": $optional
         }
     """.toJson()

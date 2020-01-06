@@ -47,7 +47,8 @@ class HomeUpdatingProcessor(call: ApplicationCall) : RequestProcessor(call) {
             getMonthlyRewardMembers(Channel.APP_RELEASE, 500),
             getMonthlyRewardMembers(Channel.WEB_RELEASE, 500),
             getMonthlyRewardMembers(Channel.QA, 500),
-            getMonthlyRewardMembers(Channel.BETA, 1000)
+            getMonthlyRewardMembers(Channel.BETA, 500),
+            getMonthlyRewardMembers(Channel.DATA, 500)
         )
             .flatten()
             .sumRewardsAndDescriptionsByMember()

@@ -38,7 +38,7 @@ class ReportCreatedMessageJsonCreator(
             {
                 "type": "section",
                 "text": ${createMarkdownText(
-            StringBuffer().apply {
+            buildString {
                 append(createField("보고자", "<@${requestBody.user.id}>"))
                 append(createField("발생 경로", submissionValues.path.action.value!!))
                 append(createField("오류 현상", submissionValues.situation.action.value!!))
@@ -53,8 +53,7 @@ class ReportCreatedMessageJsonCreator(
                 append(createField("예상 담당개발자", createDeveloperMention(submissionValues.developer.action.selectedOption!!.value)))
                 append(createField("리포팅 채널", submissionValues.channel.action.selectedOption!!.value))
                 append(createField("지라 링크", getIssueUrl(issueKey)))
-            }.toString()
-                .escapeNewLine()
+            }.escapeNewLine()
         )}
             }
         """
