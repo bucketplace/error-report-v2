@@ -50,7 +50,7 @@ class WebVersionsGetter(versios: List<Version>) {
         return version.name
             ?.let { Regex("(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)").find(it)?.groupValues }
             ?.let { groupValues -> groupValues[1].toInt() * 1000000 + groupValues[2].toInt() * 10000 + groupValues[3].toInt() * 100 + groupValues[4].toInt() }
-            ?: Int.MAX_VALUE
+            ?: Int.MIN_VALUE
     }
 
     private fun getReleaseName(version: Version): String {
