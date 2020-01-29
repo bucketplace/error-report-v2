@@ -42,15 +42,15 @@ class ReportIssueJsonCreator(
         val submissionValues = requestBody.view.state.values
         path = submissionValues.path.action.value!!
         situation = submissionValues.situation.action.value!!
-        expectedResult = submissionValues.expectedResult.action.value
+        expectedResult = submissionValues.expectedResult?.action?.value
         version = runBlocking {
             getVersion(submissionValues.version.action.selectedOption!!.value)
         }
-        server = submissionValues.server.action.selectedOption?.let { Server.get(it.value) }
-        etcEnvironment = submissionValues.etcEnvironment.action.value
+        server = submissionValues.server?.action?.selectedOption?.let { Server.get(it.value) }
+        etcEnvironment = submissionValues.etcEnvironment?.action?.value
         priority = Priority.get(submissionValues.priority.action.selectedOption!!.value)
-        errorType = submissionValues.errorType.action.selectedOption?.let { ErrorType.get(it.value) }
-        reproducing = submissionValues.reproducing.action.selectedOption?.let { Reproducing.get(it.value) }
+        errorType = submissionValues.errorType?.action?.selectedOption?.let { ErrorType.get(it.value) }
+        reproducing = submissionValues.reproducing?.action?.selectedOption?.let { Reproducing.get(it.value) }
         track = Track.get(submissionValues.track.action.selectedOption!!.value)
         developer = Developer.get(submissionValues.developer.action.selectedOption!!.value)
         channel = Channel.get(submissionValues.channel.action.selectedOption!!.value)

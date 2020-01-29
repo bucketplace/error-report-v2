@@ -86,7 +86,7 @@ object ReportModalJsonCreator {
         return createSelectBlock(
             blockId = BlockId.VERSION.name.toLowerCase(),
             label = createPlainText("발생 버전"),
-            placeholder = createPlainText(" "),
+            placeholder = createPlainText("선택"),
             options = createVersionOptions(),
             optional = false
         )
@@ -102,7 +102,7 @@ object ReportModalJsonCreator {
         return createSelectBlock(
             blockId = BlockId.SERVER.name.toLowerCase(),
             label = createPlainText("서버"),
-            placeholder = createPlainText(" "),
+            placeholder = createPlainText("선택"),
             options = createServerOptions(),
             optional = true
         )
@@ -128,7 +128,7 @@ object ReportModalJsonCreator {
         return createSelectBlock(
             blockId = BlockId.PRIORITY.name.toLowerCase(),
             label = createPlainText("심각도"),
-            placeholder = createPlainText(" "),
+            placeholder = createPlainText("선택"),
             options = createPriorityOptions(),
             optional = false
         )
@@ -144,7 +144,7 @@ object ReportModalJsonCreator {
         return createSelectBlock(
             blockId = BlockId.ERROR_TYPE.name.toLowerCase(),
             label = createPlainText("예상 오류 유형"),
-            placeholder = createPlainText(" "),
+            placeholder = createPlainText("선택"),
             options = createErrorTypeOptions(),
             optional = true
         )
@@ -160,7 +160,7 @@ object ReportModalJsonCreator {
         return createSelectBlock(
             blockId = BlockId.REPRODUCING.name.toLowerCase(),
             label = createPlainText("재현 가능 여부"),
-            placeholder = createPlainText(" "),
+            placeholder = createPlainText("선택"),
             options = createReproducingOptions(),
             optional = true
         )
@@ -180,7 +180,7 @@ object ReportModalJsonCreator {
         return createSelectBlock(
             blockId = BlockId.TRACK.name.toLowerCase(),
             label = createPlainText("예상 담당트랙"),
-            placeholder = createPlainText(" "),
+            placeholder = createPlainText("선택"),
             options = createTrackOptions(),
             optional = false
         )
@@ -196,7 +196,7 @@ object ReportModalJsonCreator {
         return createSelectBlock(
             blockId = BlockId.DEVELOPER.name.toLowerCase(),
             label = createPlainText("예상 담당개발자"),
-            placeholder = createPlainText(" "),
+            placeholder = createPlainText("선택"),
             options = createDeveloperOptions(),
             optional = false
         )
@@ -212,7 +212,7 @@ object ReportModalJsonCreator {
         return createSelectBlock(
             blockId = BlockId.CHANNEL.name.toLowerCase(),
             label = createPlainText("리포팅 채널"),
-            placeholder = createPlainText(" "),
+            placeholder = createPlainText("선택"),
             options = createChannelOptions(),
             optional = false
         )

@@ -34,7 +34,7 @@ class InteractionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
 
     private fun getRequestBody(): InteractionRequestBody {
         return runBlocking {
-            call.receive<Parameters>()["payload"]!!.parseJson<InteractionRequestBody>()
+            call.receive<Parameters>()["payload"]!!.also { println(it) }.parseJson<InteractionRequestBody>().also { println(it) }
         }
     }
 

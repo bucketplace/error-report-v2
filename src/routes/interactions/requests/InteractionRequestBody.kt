@@ -19,13 +19,13 @@ data class InteractionRequestBody(
             data class Values(
                 val path: TextValue,
                 val situation: TextValue,
-                val expectedResult: TextValue,
+                val expectedResult: TextValue?,
                 val version: SelectValue,
-                val server: SelectValue,
-                val etcEnvironment: TextValue,
+                val server: SelectValue?,
+                val etcEnvironment: TextValue?,
                 val priority: SelectValue,
-                val errorType: SelectValue,
-                val reproducing: SelectValue,
+                val errorType: SelectValue?,
+                val reproducing: SelectValue?,
                 val track: SelectValue,
                 val developer: SelectValue,
                 val channel: SelectValue
