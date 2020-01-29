@@ -9,6 +9,10 @@ fun String.escapeNewLine(): String {
     return replace("\n", "\\n")
 }
 
+fun String.escapeDoubleQuotation(): String {
+    return replace("\"", "'")
+}
+
 fun String.convertUtf8mb4(): String {
     return replace("[\uD800-\uDBFF][\uDC00-\uDFFF]".toRegex(), "??")
 }

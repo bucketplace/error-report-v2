@@ -6,6 +6,7 @@ import enums.Track
 import routes.interactions.requests.InteractionRequestBody
 import secrets.JiraSecrets
 import utils.SlackJsonCreator.createMarkdownText
+import utils.escapeDoubleQuotation
 import utils.escapeNewLine
 import utils.toJson
 
@@ -40,12 +41,12 @@ class ReportCreatedMessageJsonCreator(
                 "text": ${createMarkdownText(
             buildString {
                 append(createField("보고자", "<@${requestBody.user.id}>"))
-                append(createField("발생 경로", submissionValues.path.action.value!!))
-                append(createField("오류 현상", submissionValues.situation.action.value!!))
-                append(createField("기대 결과", submissionValues.expectedResult?.action?.value ?: "-"))
-                append(createField("발생 버전", submissionValues.version.action.selectedOption!!.value))
+                append(createField("발생 경로", submissionValues.path.action.value!!.escapeDoubleQuotation()))
+                append(createField("오류 현상", submissionValues.situation.action.value!!.escapeDoubleQuotation()))
+                append(createField("기대 결과", submissionValues.expectedResult?.action?.value?.escapeDoubleQuotation() ?: "-"))
+                append(createField("발생 버전", submissionValues.version.action.selectedOption!!.value.escapeDoubleQuotation()))
                 append(createField("서버", submissionValues.server?.action?.selectedOption?.value ?: "-"))
-                append(createField("기타 환경", submissionValues.etcEnvironment?.action?.value ?: "-"))
+                append(createField("기타 환경", submissionValues.etcEnvironment?.action?.value?.escapeDoubleQuotation() ?: "-"))
                 append(createField("심각도", submissionValues.priority.action.selectedOption!!.value))
                 append(createField("예상 오류 유형", submissionValues.errorType?.action?.selectedOption?.value ?: "-"))
                 append(createField("재현 가능 여부", submissionValues.reproducing?.action?.selectedOption?.value ?: "-"))

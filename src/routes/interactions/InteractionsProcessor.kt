@@ -41,12 +41,12 @@ class InteractionsProcessor(call: ApplicationCall) : RequestProcessor(call) {
     override suspend fun process() {
         if (isReportCreatingRequest()) {
             respondAccepted()
-            progressWithProgressModal {
+//            progressWithProgressModal {
                 val issueKey = createReportIssueAndDoTodoTranslation()
                 val messageTs = postReportCreatedMessage(issueKey)
                 // TODO 우선순위 HIGHEST는 SavedMessage의 슬랙링크를 PO채널에 보내야 함
                 appendMessageLinkToIssue(issueKey, messageTs)
-            }
+//            }
         }
     }
 

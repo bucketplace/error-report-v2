@@ -10,10 +10,12 @@ import routes.interactions.requests.InteractionRequestBody
 import routes.versions.utils.ServerVersionsGetter
 import routes.versions.utils.VersionsGetter
 import utils.convertUtf8mb4
+import utils.escapeDoubleQuotation
 import utils.escapeNewLine
 import utils.toJson
 import kotlin.math.min
 
+@Suppress("SimpleRedundantLet")
 class ReportIssueJsonCreator(
     requestBody: InteractionRequestBody
 ) {
@@ -132,18 +134,20 @@ class ReportIssueJsonCreator(
     private fun createSummary(): String {
         return "[${developer.platform.displayName}]"
             .plus(" ${situation.convertUtf8mb4()}")
+            .let { it.replace("\n", " ") }
+            .let { it.replace("\"", "'")}
             .let { it.substring(0, min(it.length, 100)) }
     }
 
     fun createDescription(): String {
         return buildString {
             append("\nh2. 보고자\n\n${reporterNickname}")
-            append("\nh2. 발생 경로\n\n${path}")
-            append("\nh2. 오류 현상\n\n${situation}")
-            append("\nh2. 기대 결과\n\n${expectedResult ?: "-"}")
-            append("\nh2. 발생 버전\n\n${version.name}")
+            append("\nh2. 발생 경로\n\n${path.escapeDoubleQuotation()}")
+            append("\nh2. 오류 현상\n\n${situation.escapeDoubleQuotation()}")
+            append("\nh2. 기대 결과\n\n${expectedResult?.escapeDoubleQuotation() ?: "-"}")
+            append("\nh2. 발생 버전\n\n${version.name?.escapeDoubleQuotation()}")
             append("\nh2. 서버\n\n${server?.displayName ?: "-"}")
-            append("\nh2. 기타 환경\n\n${etcEnvironment ?: "-"}")
+            append("\nh2. 기타 환경\n\n${etcEnvironment?.escapeDoubleQuotation() ?: "-"}")
             append("\nh2. 심각도\n\n${priority.displayName}")
             append("\nh2. 예상 오류 유형\n\n${errorType?.displayName ?: "-"}")
             append("\nh2. 재현 가능 여부\n\n${reproducing?.displayName ?: "-"}")

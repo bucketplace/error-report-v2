@@ -58,7 +58,8 @@ object ReportModalJsonCreator {
             label = createPlainText("발생 경로"),
             placeholder = createPlainText(" "),
             hint = createPlainText("예) 제품 디테일›리뷰목록 전체보기›리뷰 쓰기"),
-            optional = false
+            optional = false,
+            multiline = true
         )
     }
 
@@ -68,7 +69,8 @@ object ReportModalJsonCreator {
             label = createPlainText("오류 현상"),
             placeholder = createPlainText(" "),
             hint = createPlainText("예) 포토리뷰 작성 시 마지막 단계에서 리뷰 작성이 불가합니다."),
-            optional = false
+            optional = false,
+            multiline = true
         )
     }
 
