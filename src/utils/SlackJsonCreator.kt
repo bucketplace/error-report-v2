@@ -22,7 +22,15 @@ object SlackJsonCreator {
         }
     """.toJson()
 
-    fun createInputBlock(blockId: String, label: String, placeholder: String, hint: String, optional: Boolean, multiline: Boolean = false) = """
+    fun createInputBlock(
+        blockId: String,
+        label: String,
+        placeholder: String,
+        hint: String,
+        optional: Boolean,
+        multiline: Boolean = false,
+        maxLength: Int = 3000
+    ) = """
         {
             "type": "input",
             "block_id": "$blockId",
@@ -31,7 +39,8 @@ object SlackJsonCreator {
                 "type": "plain_text_input",
                 "action_id": "action",
                 "placeholder": $placeholder,
-                "multiline": $multiline
+                "multiline": $multiline,
+                "max_length": $maxLength
             },
             "hint": $hint,
             "optional": $optional

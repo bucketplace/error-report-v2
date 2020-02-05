@@ -17,12 +17,14 @@ class WebVersionsGetter(versios: List<Version>) {
 
     companion object {
         private val COMMIT_HASH_REGEX = Regex("\\((http.+)\\).+\\(at (.+)\\)")
+        private val COMMIT_VERSION_NAME_REGEX = Regex("Branch.+(\\d+_\\d+_\\d+_\\d+).+\\(at")
         private val ISSUE_KEY_REGEX = Regex("(OK-\\d+)")
-        private val ISSUE_VERSION_NAME_REGEX = Regex("(\\d+\\.\\d+\\.\\d+\\.\\d+)")
+        private val ISSUE_VERSION_NAME_REGEX = Regex("Branch.+(\\d+\\.\\d+\\.\\d+\\.\\d+)")
     }
 
     private data class Commit(
         val serverDomain: String,
+        val versionName: String? = null,
         val hash: String
     )
 
@@ -58,27 +60,36 @@ class WebVersionsGetter(versios: List<Version>) {
     }
 
     private suspend fun getLatestQaOrHotfixVersions(): List<Version> {
-        return getCommitHashsText()
-            .let { getCommitHashs(it) }
-            .mapNotNull { commitHash ->
-                getCommitMessage(commitHash.hash)
-                    .let { findIssueKey(it) }
-                    ?.let { getIssue(it) }
-                    ?.takeIf { it.isWebIssue() }
-                    ?.let { it.getVersionName() }
+        return getCommitsText()
+            .let { getCommits(it) }
+            .mapNotNull { commit ->
+                val versionName = commit.versionName
+                    ?: getCommitMessage(commit.hash)
+                        .let { findIssueKey(it) }
+                        ?.let { getIssue(it) }
+                        ?.takeIf { it.isWebIssue() }
+                        ?.let { it.getVersionName() }
+                versionName
                     ?.let { webVersions.getLatestVersion(it) }
                     ?.copy()
-                    ?.also { it.name = getQaOrHotfixName(commitHash, it) }
+                    ?.also { it.name = getQaOrHotfixName(commit, it) }
             }
     }
 
-    private suspend fun getCommitHashsText(): String {
+    private suspend fun getCommitsText(): String {
         return ApiRequester.request<String>("GET", AwsSecrets.WEB_SERVER_COMMIT_HASHS_URL)
     }
 
-    private fun getCommitHashs(commitHashsText: String): List<Commit> {
+    private fun getCommits(commitHashsText: String): List<Commit> {
         return COMMIT_HASH_REGEX.findAll(commitHashsText).toList()
-            .map { Commit(it.groupValues[1], it.groupValues[2]) }
+            .map {
+                val versionName = COMMIT_VERSION_NAME_REGEX.find(it.groupValues[0])?.groupValues?.get(1)?.replace("_", ".")
+                Commit(
+                    serverDomain = it.groupValues[1],
+                    versionName = versionName,
+                    hash = it.groupValues[2]
+                )
+            }
     }
 
     private suspend fun getCommitMessage(hash: String): String {

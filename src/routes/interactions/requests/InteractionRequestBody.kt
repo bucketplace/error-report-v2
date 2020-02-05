@@ -17,6 +17,7 @@ data class InteractionRequestBody(
             val values: Values
         ) {
             data class Values(
+                val subject: TextValue?,
                 val path: TextValue,
                 val situation: TextValue,
                 val expectedResult: TextValue?,

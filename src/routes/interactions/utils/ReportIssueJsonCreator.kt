@@ -26,6 +26,7 @@ class ReportIssueJsonCreator(
         private const val REPORTER_FIELD_VALUE = "slack_bug"
     }
 
+    private val subject: String?
     private val path: String
     private val situation: String
     private val expectedResult: String?
@@ -42,6 +43,7 @@ class ReportIssueJsonCreator(
 
     init {
         val submissionValues = requestBody.view.state.values
+        subject = submissionValues.subject?.action?.value
         path = submissionValues.path.action.value!!
         situation = submissionValues.situation.action.value!!
         expectedResult = submissionValues.expectedResult?.action?.value
@@ -133,15 +135,16 @@ class ReportIssueJsonCreator(
 
     private fun createSummary(): String {
         return "[${developer.platform.displayName}]"
-            .plus(" ${situation.convertUtf8mb4()}")
+            .plus(" ${(subject ?: situation).convertUtf8mb4()}")
             .let { it.replace("\n", " ") }
-            .let { it.replace("\"", "'")}
+            .let { it.replace("\"", "'") }
             .let { it.substring(0, min(it.length, 100)) }
     }
 
     fun createDescription(): String {
         return buildString {
             append("\nh2. 보고자\n\n${reporterNickname}")
+            append("\nh2. 카드 제목\n\n${subject?.escapeDoubleQuotation() ?: "-"}")
             append("\nh2. 발생 경로\n\n${path.escapeDoubleQuotation()}")
             append("\nh2. 오류 현상\n\n${situation.escapeDoubleQuotation()}")
             append("\nh2. 기대 결과\n\n${expectedResult?.escapeDoubleQuotation() ?: "-"}")

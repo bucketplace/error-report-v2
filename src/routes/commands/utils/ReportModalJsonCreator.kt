@@ -29,6 +29,7 @@ object ReportModalJsonCreator {
             "blocks": [
                 ${createInformationSection()},
                 ${createDivider()},
+                ${createSubjectInputBlock()},
                 ${createPathInputBlock()},
                 ${createSituationInputBlock()},
                 ${createExpectedResultInputBlock()},
@@ -51,6 +52,18 @@ object ReportModalJsonCreator {
 			"text": ${createMarkdownText("※ *스크린샷* 은 스레드에 댓글로 달아주세요.")}
 		}
     """
+
+    private fun createSubjectInputBlock(): String {
+        return createInputBlock(
+            blockId = BlockId.SUBJECT.name.toLowerCase(),
+            label = createPlainText("카드 제목"),
+            placeholder = createPlainText(" "),
+            hint = createPlainText("미입력 시 오류 현상의 내용이 사용됩니다."),
+            optional = true,
+            multiline = false,
+            maxLength = 100
+        )
+    }
 
     private fun createPathInputBlock(): String {
         return createInputBlock(

@@ -41,6 +41,7 @@ class ReportCreatedMessageJsonCreator(
                 "text": ${createMarkdownText(
             buildString {
                 append(createField("보고자", "<@${requestBody.user.id}>"))
+                append(createField("카드 제목", submissionValues.subject?.action?.value?.escapeDoubleQuotation() ?: "-"))
                 append(createField("발생 경로", submissionValues.path.action.value!!.escapeDoubleQuotation()))
                 append(createField("오류 현상", submissionValues.situation.action.value!!.escapeDoubleQuotation()))
                 append(createField("기대 결과", submissionValues.expectedResult?.action?.value?.escapeDoubleQuotation() ?: "-"))
