@@ -29,7 +29,7 @@ class ReportCreatedMessageJsonCreator(
     private fun createQaMentionSection() = """
         {
 			"type": "section",
-			"text": ${createMarkdownText("@qa")}
+			"text": ${createMarkdownText("@dev_qa")}
 		}
     """
 
