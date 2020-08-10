@@ -4,7 +4,6 @@ import db.members.MemberDao
 import db.versions.Version
 import db.versions.VersionDao
 import enums.*
-import enums.Channel.WEB_RELEASE
 import kotlinx.coroutines.runBlocking
 import routes.interactions.requests.InteractionRequestBody
 import routes.versions.utils.ServerVersionsGetter
@@ -64,7 +63,7 @@ class ReportIssueJsonCreator(
     private suspend fun getVersion(displayName: String): Version {
         if (displayName == ServerVersionsGetter.DISPLAY_NAME) {
             val serverVersions = getServerVersions()
-            return if (channel == WEB_RELEASE) {
+            return if (channel == Channel.WEB_RELEASE) {
                 serverVersions.filter { it.released }.maxBy { getServerVersionNameValue(it) }
             } else {
                 serverVersions.filter { !it.released }.minBy { getServerVersionNameValue(it) }
@@ -97,9 +96,7 @@ class ReportIssueJsonCreator(
                     "id": "$ISSUE_FIELD_BUG_TYPE_ID"
                 },
                 "summary": "${createSummary()}",
-                "assignee": {
-                    "name": "${developer.jiraUserName}"
-                },
+                ${createAssigneeIfNeed()}
                 "reporter": {
                     "name": "$REPORTER_FIELD_VALUE"
                 }, 
@@ -139,6 +136,16 @@ class ReportIssueJsonCreator(
             .let { it.replace("\n", " ") }
             .let { it.replace("\"", "'") }
             .let { it.substring(0, min(it.length, 100)) }
+    }
+
+    private fun createAssigneeIfNeed(): String {
+        return if (channel !in listOf(Channel.APP_RELEASE, Channel.WEB_RELEASE)) {
+            """
+                "assignee": {
+                    "name": "${developer.jiraUserName}"
+                },
+            """
+        } else ""
     }
 
     fun createDescription(): String {

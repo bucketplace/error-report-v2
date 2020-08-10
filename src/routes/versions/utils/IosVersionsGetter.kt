@@ -25,11 +25,11 @@ class IosVersionsGetter(versios: List<Version>) {
     }
 
     suspend fun getLatestVersions(): List<Version> {
-        return listOfNotNull(
-            getLatestReleaseVersion(),
-            getLatestQaVersion(),
-            getLatestHotfixVersion()
-        )
+        return mutableListOf<Version>().apply {
+            getLatestReleaseVersion()?.let { add(it) }
+            addAll(getLatest2QaVersions())
+            getLatestHotfixVersion()?.let { add(it) }
+        }
     }
 
     private suspend fun getLatestReleaseVersion(): Version? {
@@ -53,13 +53,21 @@ class IosVersionsGetter(versios: List<Version>) {
         return "${Platform.IOS.shortName} 마켓출시버전(${version.name})"
     }
 
-    private suspend fun getLatestQaVersion(): Version? {
+    private suspend fun getLatest2QaVersions(): List<Version> {
         return getTestFlightVersions()
-            .let { it.getLatestTestFlightVersion(TEST_FLIGHT_QA_VERSION_NAME_REGEX) }
-            .let { it.getTestFlightVersionName(TEST_FLIGHT_QA_VERSION_NAME_REGEX)!! }
-            .let { iosVersions.getLatestVersion(it) }
-            ?.copy()
-            ?.also { it.name = getQaVersion(it) }
+            .let { it.getLatest2TestFlightVersions(TEST_FLIGHT_QA_VERSION_NAME_REGEX) }
+            .map { it.getTestFlightVersionName(TEST_FLIGHT_QA_VERSION_NAME_REGEX)!! }
+            .map { iosVersions.getLatestVersion(it) }
+            .map { it?.copy() }
+            .map { version ->
+                version?.let { it.name = getQaVersion(it) }
+                version
+            }
+            .filterNotNull()
+    }
+
+    private fun List<Data>.getLatest2TestFlightVersions(versionNameRegex: Regex): List<Data> {
+        return this.filter { it.getTestFlightVersionName(versionNameRegex)?.isNotBlank() ?: false }.take(2)
     }
 
     private fun getQaVersion(version: Version): String {

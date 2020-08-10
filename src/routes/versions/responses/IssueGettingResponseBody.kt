@@ -3,7 +3,7 @@ package routes.versions.responses
 import com.google.gson.annotations.SerializedName
 
 data class IssueGettingResponseBody(
-    val fields: Fields
+    val fields: Fields?
 ) {
     data class Fields(
         val components: List<Component>,

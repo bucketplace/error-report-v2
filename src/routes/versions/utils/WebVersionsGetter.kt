@@ -19,7 +19,7 @@ class WebVersionsGetter(versios: List<Version>) {
         private val COMMIT_HASH_REGEX = Regex("\\((http.+)\\).+\\(at (.+)\\)")
         private val COMMIT_VERSION_NAME_REGEX = Regex("Branch.+(\\d+_\\d+_\\d+_\\d+).+\\(at")
         private val ISSUE_KEY_REGEX = Regex("(OK-\\d+)")
-        private val ISSUE_VERSION_NAME_REGEX = Regex("Branch.+(\\d+\\.\\d+\\.\\d+\\.\\d+)")
+        private val ISSUE_VERSION_NAME_REGEX = Regex("Web.+(\\d+\\.\\d+\\.\\d+\\.\\d+)")
     }
 
     private data class Commit(
@@ -116,11 +116,11 @@ class WebVersionsGetter(versios: List<Version>) {
     }
 
     private fun IssueGettingResponseBody.isWebIssue(): Boolean {
-        return fields.components.any { it.name == "Web" }
+        return fields?.components?.any { it.name == "Web" } ?: false
     }
 
     private fun IssueGettingResponseBody.getVersionName(): String? {
-        return fields.fixVersions.firstOrNull()?.name?.let {
+        return fields?.fixVersions?.firstOrNull()?.name?.let {
             ISSUE_VERSION_NAME_REGEX.find(it)?.groupValues?.get(1)
         }
     }
