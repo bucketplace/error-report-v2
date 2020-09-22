@@ -51,8 +51,8 @@ class ReportCreatedMessageJsonCreator(
                 append(createField("심각도", submissionValues.priority.action.selectedOption!!.value))
                 append(createField("예상 오류 유형", submissionValues.errorType?.action?.selectedOption?.value ?: "-"))
                 append(createField("재현 가능 여부", submissionValues.reproducing?.action?.selectedOption?.value ?: "-"))
-                if (requestBody.hasReleaseReportingChannel()) {
-                    append(createField("예상 담당PO", createPoMention(submissionValues.track.action.selectedOption!!.value)))
+                if (requestBody.hasReleaseReportingChannel() && hasTrackPo(submissionValues.track.action.selectedOption!!.value)) {
+                    append(createField("예상 담당PO", createPoMention(submissionValues.track.action.selectedOption.value)))
                 } else {
                     append(createField("예상 담당트랙", createTrackMention(submissionValues.track.action.selectedOption!!.value)))
                 }
@@ -66,6 +66,10 @@ class ReportCreatedMessageJsonCreator(
     }
 
     private fun createField(label: String, text: String) = "\n*$label*\n$text"
+
+    private fun hasTrackPo(displayName: String): Boolean {
+        return Track.get(displayName).poNickname != null
+    }
 
     private fun createPoMention(displayName: String): String {
         return "<@${getMemberId(Track.get(displayName).poNickname!!)}>"
