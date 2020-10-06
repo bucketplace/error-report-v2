@@ -21,7 +21,7 @@ class HomeUpdatingProcessor(call: ApplicationCall) : RequestProcessor(call) {
         private const val VIEW_PUBLISH_URL = "$SLACK_API_DOMAIN/views.publish"
         private const val MESSAGE_SEARCHING_URL = "$SLACK_API_DOMAIN/search.messages"
         private val REPORTER_MEMBER_ID_REGEX = Regex("보고자.+?<@([a-zA-Z0-9]+)>")
-        private val ISSUE_KEY_REGEX = Regex("지라 링크.+?http://jira.dailyhou.se/browse/(OK-\\d+)")
+        private val ISSUE_KEY_REGEX = Regex("지라 링크.+?https?://jira.dailyhou.se/browse/(OK-\\d+)")
         private val VERSION_REGEX = Regex("발생 버전(.+?)서버")
     }
 
