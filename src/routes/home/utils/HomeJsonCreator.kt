@@ -49,7 +49,7 @@ class HomeJsonCreator(
 
     private fun getThisMonth(): String {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("KST")).apply {
-            this.add(Calendar.DATE, -1)
+            this.add(Calendar.DATE, -10)
         }
         val month = calendar.get(Calendar.MONTH) + 1
         return "${month}월 리워드 랭킹"

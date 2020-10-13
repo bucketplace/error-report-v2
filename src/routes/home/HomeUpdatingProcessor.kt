@@ -81,7 +81,7 @@ class HomeUpdatingProcessor(call: ApplicationCall) : RequestProcessor(call) {
 
     private fun getMessageSearchingUrl(channel: Channel, page: Int): String {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("KST")).apply {
-            this.add(Calendar.DATE, -1)
+            this.add(Calendar.DATE, -10)
         }
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH) + 1
