@@ -123,9 +123,7 @@ class ReportIssueJsonCreator(
                 "customfield_11102": {
                     "id": "${reproducing?.jiraReproducingFieldValueId ?: Reproducing.JIRA_REPRODUCING_FIELD_VALUE_ID_NONE}"
                 },
-                "labels": [
-                    "${track.jiraLabelFieldValue}"
-                ]
+                "labels": ${track.jiraLabelFieldValues.map { "\"$it\"" }}
             }
         }
     """.toJson()
