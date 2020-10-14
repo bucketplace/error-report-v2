@@ -68,11 +68,13 @@ class ReportCreatedMessageJsonCreator(
     private fun createField(label: String, text: String) = "\n*$label*\n$text"
 
     private fun hasTrackPo(displayName: String): Boolean {
-        return Track.get(displayName).poNickname != null
+        return Track.get(displayName).poNicknames.isNotEmpty()
     }
 
     private fun createPoMention(displayName: String): String {
-        return "<@${getMemberId(Track.get(displayName).poNickname!!)}>"
+        return Track.get(displayName).poNicknames.joinToString(" ") { poName ->
+            "<@${getMemberId(poName)}>"
+        }
     }
 
     private fun createTrackMention(displayName: String): String {
