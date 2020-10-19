@@ -35,8 +35,9 @@ class WebVersionsGetter(versios: List<Version>) {
     suspend fun getLatestVersions(): List<Version> {
         return mutableListOf<Version>().apply {
             add(getLatestReleaseVersion())
+            addAll(getLatestUnreleaseVersions())
             addAll(getLatestQaOrHotfixVersions())
-        }
+        }.distinctBy { it.id }
     }
 
     private fun getLatestReleaseVersion(): Version {
@@ -46,6 +47,17 @@ class WebVersionsGetter(versios: List<Version>) {
             ?.copy()
             ?.also { it.name = getReleaseName(it) }
             ?: throw Exception("latest release version not found.")
+    }
+
+    private fun getLatestUnreleaseVersions(): List<Version> {
+        return webVersions
+            .filter { it.released.not() }
+            .sortedBy { getVersionNameValue(it) }
+            .map { it.copy() }
+            .map {
+                it.name = getReleaseName(it)
+                it
+            }
     }
 
     private fun getVersionNameValue(version: Version): Int {
